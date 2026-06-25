@@ -21,6 +21,11 @@ class DatabaseSeeder extends Seeder
             AccessSeeder::class,
             TaskSeeder::class,
             RoleTaskSeeder::class,
+            RoomSeeder::class,
+            DoctorSeeder::class,
+            PatientSeeder::class,
+            AppointmentSeeder::class,
+            MedicalRecordSeeder::class,
         ]);
     }
 }

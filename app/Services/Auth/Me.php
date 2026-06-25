@@ -20,13 +20,20 @@ class Me extends CoreService
     {
         $user = Auth::user();
 
-        $permissions = DB::table('role_task')
-        ->join('tasks', 'tasks.id', '=', 'role_task.task_id')
-        ->where('role_task.role_id', $user->role_id)
-        ->where('role_task.active', true)
-        ->where('tasks.active', true)
-        ->pluck('tasks.task_code')
-        ->toArray();
+        if ((int) $user->role_id === 1) {
+            $permissions = DB::table('tasks')
+                ->where('active', true)
+                ->pluck('task_code')
+                ->toArray();
+        } else {
+            $permissions = DB::table('role_task')
+                ->join('tasks', 'tasks.id', '=', 'role_task.task_id')
+                ->where('role_task.role_id', $user->role_id)
+                ->where('role_task.active', true)
+                ->where('tasks.active', true)
+                ->pluck('tasks.task_code')
+                ->toArray();
+        }
 
         return [
             'success' => true,

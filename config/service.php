@@ -4,7 +4,7 @@ return [
     'services' => [
         [
             'name' => 'DoLogin',
-            'class' => \App\Services\Auth\DoLogin::class,
+            'class' => \App\Services\Auth\DoUnifiedLogin::class,
             'type' => 'post',
             'end_point' => '/login',
             'guard' => null,
