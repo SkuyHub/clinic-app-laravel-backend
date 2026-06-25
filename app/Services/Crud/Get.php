@@ -81,6 +81,8 @@ class Get extends CoreService
 
         if (in_array($sortField, $modelClass::FIELD_SORTABLE)) {
             $query->orderBy("{$table}.{$sortField}", $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->orderBy("{$table}.id", 'asc');
         }
 
         $rows = $query->offset($offset)->limit($limit)->get();

@@ -55,8 +55,15 @@ class PatientAppointments extends CoreService
 
         $total = $query->count();
 
-        $query->orderBy("{$table}.appointment_date", 'asc')
-              ->orderBy("{$table}.appointment_time", 'asc');
+        $sortField = $input['sort'] ?? null;
+        $sortDir = $input['order'] ?? 'asc';
+
+        if ($sortField && in_array($sortField, Appointments::FIELD_SORTABLE)) {
+            $query->orderBy("{$table}.{$sortField}", $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->orderBy("{$table}.appointment_date", 'asc')
+                  ->orderBy("{$table}.appointment_time", 'asc');
+        }
 
         $rows = $query->offset($offset)->limit($limit)->get();
 

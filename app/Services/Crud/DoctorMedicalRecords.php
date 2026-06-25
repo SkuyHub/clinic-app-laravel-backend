@@ -55,7 +55,14 @@ class DoctorMedicalRecords extends CoreService
 
         $total = $query->count();
 
-        $query->orderBy("{$table}.created_at", 'desc');
+        $sortField = $input['sort'] ?? null;
+        $sortDir = $input['order'] ?? 'asc';
+
+        if ($sortField && in_array($sortField, MedicalRecords::FIELD_SORTABLE)) {
+            $query->orderBy("{$table}.{$sortField}", $sortDir === 'desc' ? 'desc' : 'asc');
+        } else {
+            $query->orderBy("{$table}.created_at", 'desc');
+        }
 
         $rows = $query->offset($offset)->limit($limit)->get();
 
