@@ -51,4 +51,9 @@ class Rooms extends BaseModel
         }
         return $input;
     }
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointments::class, 'room_id');
+    }
 }
