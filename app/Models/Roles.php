@@ -46,6 +46,8 @@ class Roles extends BaseModel
         'id',
         'role_code',
         'role_name',
+        'description',
+        'active',
         'created_at',
         'updated_at'
     ];

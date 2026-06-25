@@ -34,6 +34,9 @@ class RoleTask extends BaseModel
     ];
     public const FIELD_SORTABLE = [
         'id',
+        'role_id',
+        'task_id',
+        'active',
         'created_at',
         'updated_at'
     ];

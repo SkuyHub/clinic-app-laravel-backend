@@ -27,7 +27,7 @@ class Users extends Authenticatable implements JWTSubject
         'active' => ['operator' => '='],
     ];
     public const FIELD_SEARCHABLE = ['fullname', 'username', 'email'];
-    public const FIELD_SORTABLE = ['id', 'fullname', 'username', 'email', 'created_at', 'updated_at'];
+    public const FIELD_SORTABLE = ['id', 'fullname', 'username', 'email', 'role_id', 'active', 'created_at', 'updated_at'];
     public const FIELD_TYPE = [
         'id' => 'integer',
         'fullname' => 'string',

@@ -28,6 +28,7 @@ Route::middleware(['setguard:api', 'auth.rest'])->group(function () {
     Route::post('/{model}/create', [CrudController::class, 'create']);
     Route::put('/{model}/update', [CrudController::class, 'update']);
     Route::delete('/{model}/delete', [CrudController::class, 'delete']);
+    Route::post('/upload-tmp', [UploadController::class, 'upload']);
 });
 
 Route::middleware(['setguard:doctor', 'auth.rest'])->group(function () {
@@ -46,6 +47,7 @@ Route::middleware(['setguard:doctor', 'auth.rest'])->group(function () {
             ],
         ]);
     });
+    Route::post('/doctor/upload-tmp', [UploadController::class, 'upload']);
 });
 
 Route::middleware(['setguard:patient', 'auth.rest'])->group(function () {
@@ -65,9 +67,8 @@ Route::middleware(['setguard:patient', 'auth.rest'])->group(function () {
             ],
         ]);
     });
+    Route::post('/patient/upload-tmp', [UploadController::class, 'upload']);
 });
-
-Route::post('/upload-tmp', [UploadController::class, 'upload']);
 
 Route::get('/file/{path}', function ($path) {
     if (!Storage::disk('document')->exists($path)) {

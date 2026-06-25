@@ -18,7 +18,7 @@ class MedicalRecords extends BaseModel
         'appointment_id' => ['operator' => '='],
     ];
     public const FIELD_SEARCHABLE = ['diagnosis', 'treatment'];
-    public const FIELD_SORTABLE = ['id', 'diagnosis', 'treatment', 'prescription', 'created_at', 'updated_at'];
+    public const FIELD_SORTABLE = ['id', 'doctor_id', 'patient_id', 'diagnosis', 'treatment', 'prescription', 'created_at', 'updated_at'];
     public const FIELD_TYPE = [
         'id' => 'integer',
         'appointment_id' => 'integer',

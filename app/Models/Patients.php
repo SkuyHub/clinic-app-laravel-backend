@@ -25,7 +25,7 @@ class Patients extends Authenticatable implements JWTSubject
         'gender' => ['operator' => '='],
     ];
     public const FIELD_SEARCHABLE = ['fullname', 'email', 'address'];
-    public const FIELD_SORTABLE = ['id', 'fullname', 'created_at', 'updated_at'];
+    public const FIELD_SORTABLE = ['id', 'fullname', 'email', 'phone', 'gender', 'birthdate', 'created_at', 'updated_at'];
     public const FIELD_TYPE = [
         'id' => 'integer',
         'fullname' => 'string',

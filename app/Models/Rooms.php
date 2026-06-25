@@ -11,7 +11,7 @@ class Rooms extends BaseModel
     public const FIELD_VIEW = ['id', 'room_code', 'room_name', 'capacity', 'available', 'created_at', 'updated_at'];
     public const FIELD_FILTERABLE = ['available' => ['operator' => '='],];
     public const FIELD_SEARCHABLE = ['room_code', 'room_name'];
-    public const FIELD_SORTABLE = ['id', 'room_code', 'room_name', 'capacity', 'created_at', 'updated_at'];
+    public const FIELD_SORTABLE = ['id', 'room_code', 'room_name', 'capacity', 'available', 'created_at', 'updated_at'];
     public const FIELD_TYPE = [
         'id' => 'integer',
         'room_code' => 'string',

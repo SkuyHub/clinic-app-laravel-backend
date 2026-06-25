@@ -52,6 +52,8 @@ class Tasks extends BaseModel
         'id',
         'task_code',
         'task_name',
+        'module',
+        'active',
         'created_at',
         'updated_at'
     ];

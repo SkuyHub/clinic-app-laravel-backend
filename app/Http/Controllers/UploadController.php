@@ -3,17 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Tymon\JWTAuth\Facades\JWTAuth;
 
 class UploadController extends Controller
 {
     public function upload(Request $request)
     {
-        $this->authenticateAnyGuard();
-
         $request->validate([
             'file' => 'required|file|max:5120',
         ]);
@@ -29,31 +25,5 @@ class UploadController extends Controller
             'filename' => $file->getClientOriginalName(),
             'field_value' => $path,
         ]);
-    }
-
-    private function authenticateAnyGuard(): void
-    {
-        $token = JWTAuth::getToken();
-
-        if (!$token) {
-            abort(401, 'Unauthorized.');
-        }
-
-        foreach (['api', 'doctor', 'patient'] as $guard) {
-            try {
-                Config::set('auth.defaults.guard', $guard);
-                app()->forgetInstance('tymon.jwt.auth');
-
-                $user = JWTAuth::setToken($token)->authenticate();
-
-                if ($user) {
-                    return;
-                }
-            } catch (\Throwable $e) {
-                continue;
-            }
-        }
-
-        abort(401, 'Unauthorized.');
     }
 }

@@ -26,7 +26,7 @@ class Doctors extends Authenticatable implements JWTSubject
         'available' => ['operator' => '='],
     ];
     public const FIELD_SEARCHABLE = ['fullname', 'specialization', 'email'];
-    public const FIELD_SORTABLE = ['id', 'fullname', 'specialization', 'created_at', 'updated_at'];
+    public const FIELD_SORTABLE = ['id', 'fullname', 'specialization', 'email', 'phone', 'available', 'created_at', 'updated_at'];
     public const FIELD_TYPE = [
         'id' => 'integer',
         'fullname' => 'string',
