@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -32,12 +33,19 @@ class UploadController extends Controller
 
     private function authenticateAnyGuard(): void
     {
+        $token = JWTAuth::getToken();
+
+        if (!$token) {
+            abort(401, 'Unauthorized.');
+        }
+
         foreach (['api', 'doctor', 'patient'] as $guard) {
             try {
-                $user = JWTAuth::setToken(JWTAuth::getToken())->authenticate();
+                Config::set('auth.defaults.guard', $guard);
+
+                $user = JWTAuth::setToken($token)->authenticate();
 
                 if ($user) {
-                    auth($guard)->setUser($user);
                     return;
                 }
             } catch (\Throwable $e) {

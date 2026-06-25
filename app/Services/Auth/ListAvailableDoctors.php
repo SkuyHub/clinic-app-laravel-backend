@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\DB;
 
 class ListAvailableDoctors extends CoreService
 {
+    protected function prepare($input)
+    {
+        return $input;
+    }
+
     protected function process($input, $originalData)
     {
         $doctors = DB::table('doctors')
