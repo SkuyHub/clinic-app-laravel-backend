@@ -58,7 +58,7 @@ class PatientBookAppointment extends CoreService
         $this->input['_room_id'] = $room->id;
         $this->input['_patient_id'] = Auth::id();
 
-        return $input;
+        return $this->input;
     }
 
     protected function process($input, $originalData)

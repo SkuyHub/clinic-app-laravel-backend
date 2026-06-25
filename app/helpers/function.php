@@ -12,7 +12,7 @@ if (!function_exists('hasPermission')){
             return false;
         }
 
-        if ((int) ($user->role_id ?? 0) === 1){
+        if (!isset($user->role_id) || (int) $user->role_id === 1){
             return true;
         }
 

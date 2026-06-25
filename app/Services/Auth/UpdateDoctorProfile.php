@@ -47,7 +47,6 @@ class UpdateDoctorProfile extends CoreService
         }
 
         $input = Doctors::normalizePasswordOnUpdate($input);
-        $input = Doctors::normalizeBooleanField($input, 'available');
 
         $input['_doctor_id'] = $doctor->id;
         $input['_current_photo'] = $doctor->photo;

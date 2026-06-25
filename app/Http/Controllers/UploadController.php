@@ -42,6 +42,7 @@ class UploadController extends Controller
         foreach (['api', 'doctor', 'patient'] as $guard) {
             try {
                 Config::set('auth.defaults.guard', $guard);
+                app()->forgetInstance('tymon.jwt.auth');
 
                 $user = JWTAuth::setToken($token)->authenticate();
 
