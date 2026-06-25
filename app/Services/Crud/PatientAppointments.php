@@ -40,6 +40,15 @@ class PatientAppointments extends CoreService
             )) . ") as {$relation['displayName']}");
         }
 
+        if (!empty($input['search']) && !empty(Appointments::FIELD_SEARCHABLE)) {
+            $search = $input['search'];
+            $query->where(function ($q) use ($table, $search) {
+                foreach (Appointments::FIELD_SEARCHABLE as $field) {
+                    $q->orWhereRaw("LOWER({$table}.{$field}) LIKE ?", ['%' . strtolower($search) . '%']);
+                }
+            });
+        }
+
         if (!empty($input['status'])) {
             $query->where("{$table}.status", $input['status']);
         }

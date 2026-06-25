@@ -8,9 +8,9 @@ class RoleTask extends BaseModel
 {
 
     public const TABLE = 'role_task';
-    public const IS_ADD = CURLOPT_SSL_FALSESTART;
+    public const IS_ADD = true;
     public const IS_EDIT = false;
-    public const IS_LIST = false;
+    public const IS_LIST = true;
     public const FIELD_LIST = [
         'id',
         'role_id',
@@ -74,6 +74,6 @@ class RoleTask extends BaseModel
     }
     public function task()
     {
-        return $this->belongsTo(Tasks::class, 'role_id');
+        return $this->belongsTo(Tasks::class, 'task_id');
     }
 }

@@ -40,6 +40,15 @@ class PatientMedicalRecords extends CoreService
             )) . ") as {$relation['displayName']}");
         }
 
+        if (!empty($input['search']) && !empty(MedicalRecords::FIELD_SEARCHABLE)) {
+            $search = $input['search'];
+            $query->where(function ($q) use ($table, $search) {
+                foreach (MedicalRecords::FIELD_SEARCHABLE as $field) {
+                    $q->orWhereRaw("LOWER({$table}.{$field}) LIKE ?", ['%' . strtolower($search) . '%']);
+                }
+            });
+        }
+
         $total = $query->count();
 
         $query->orderBy("{$table}.created_at", 'desc');

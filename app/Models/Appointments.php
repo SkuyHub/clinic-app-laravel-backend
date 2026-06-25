@@ -19,7 +19,7 @@ class Appointments extends BaseModel
         'status' => ['operator' => '='],
         'appointment_date' => ['operator' => '='],
     ];
-    public const FIELD_SEARCHABLE = [];
+    public const FIELD_SEARCHABLE = ['notes'];
     public const FIELD_SORTABLE = ['id', 'appointment_date', 'appointment_time', 'created_at', 'updated_at'];
     public const FIELD_TYPE = [
         'id' => 'integer',

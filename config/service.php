@@ -31,6 +31,13 @@ return [
             'guard' => null,
         ],
         [
+            'name' => 'UpdateAdminProfile',
+            'class' => \App\Services\Auth\UpdateAdminProfile::class,
+            'type' => 'put',
+            'end_point' => '/profile',
+            'guard' => 'api',
+        ],
+        [
             'name' => 'UpdateDoctorProfile',
             'class' => \App\Services\Auth\UpdateDoctorProfile::class,
             'type' => 'put',
@@ -71,6 +78,20 @@ return [
             'type' => 'get',
             'end_point' => '/patient/appointments',
             'guard' => 'patient',
+        ],
+        [
+            'name' => 'PatientBookAppointment',
+            'class' => \App\Services\Auth\PatientBookAppointment::class,
+            'type' => 'post',
+            'end_point' => '/patient/book',
+            'guard' => 'patient',
+        ],
+        [
+            'name' => 'ListAvailableDoctors',
+            'class' => \App\Services\Auth\ListAvailableDoctors::class,
+            'type' => 'get',
+            'end_point' => '/doctors/available',
+            'guard' => null,
         ],
         [
             'name' => 'PatientMedicalRecords',

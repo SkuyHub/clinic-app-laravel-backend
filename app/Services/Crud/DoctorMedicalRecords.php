@@ -40,6 +40,15 @@ class DoctorMedicalRecords extends CoreService
             )) . ") as {$relation['displayName']}");
         }
 
+        if (!empty($input['search']) && !empty(MedicalRecords::FIELD_SEARCHABLE)) {
+            $search = $input['search'];
+            $query->where(function ($q) use ($table, $search) {
+                foreach (MedicalRecords::FIELD_SEARCHABLE as $field) {
+                    $q->orWhereRaw("LOWER({$table}.{$field}) LIKE ?", ['%' . strtolower($search) . '%']);
+                }
+            });
+        }
+
         if (!empty($input['patient_id'])) {
             $query->where("{$table}.patient_id", $input['patient_id']);
         }

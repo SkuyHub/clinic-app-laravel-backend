@@ -40,6 +40,9 @@ Route::middleware(['setguard:doctor', 'auth.rest'])->group(function () {
                 'fullname' => $doctor->fullname,
                 'specialization' => $doctor->specialization,
                 'email' => $doctor->email,
+                'phone' => $doctor->phone,
+                'photo' => $doctor->photo,
+                'available' => $doctor->available,
             ],
         ]);
     });
@@ -54,6 +57,11 @@ Route::middleware(['setguard:patient', 'auth.rest'])->group(function () {
                 'id' => $patient->id,
                 'fullname' => $patient->fullname,
                 'email' => $patient->email,
+                'phone' => $patient->phone,
+                'photo' => $patient->photo,
+                'birthdate' => $patient->birthdate,
+                'gender' => $patient->gender,
+                'address' => $patient->address,
             ],
         ]);
     });

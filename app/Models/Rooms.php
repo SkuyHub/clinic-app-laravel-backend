@@ -44,7 +44,7 @@ class Rooms extends BaseModel
         $input['available'] = filter_var($input['available'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         return $input;
     }
-    public static function beforeUpdatet(array $input): array
+    public static function beforeUpdate(array $input): array
     {
         if (array_key_exists('available', $input)){
             $input['available'] = filter_var($input['available'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
