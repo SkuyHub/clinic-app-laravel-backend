@@ -1,58 +1,154 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Clinic App — Laravel Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Clinic management system API built with Laravel 13. JWT authentication with three user types (admin, doctor, patient), service-oriented architecture, and config-driven CRUD.
 
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Quick Start
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer run setup
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+This installs dependencies, copies `.env.example`, generates `APP_KEY`, runs migrations, installs npm deps, and builds the frontend.
 
-## Contributing
+**Important**: Add `JWT_SECRET` to `.env` manually — it is not auto-generated and not in `.env.example`.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Commands
 
-## Code of Conduct
+| Command | What it does |
+|---------|-------------|
+| `composer run setup` | Fresh install: deps, .env, key, migrate, npm install + build |
+| `composer run dev` | `artisan serve` + `queue:listen` + `vite` concurrently |
+| `composer run test` | Clears config, runs `php artisan test` |
+| `php artisan test --filter=TestName` | Single test |
+| `vendor/bin/pint` | Lint (Laravel Pint) |
+| `php artisan migrate:fresh --seed` | Reset DB + seed all tables |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Architecture
 
-## Security Vulnerabilities
+### Service-oriented routing
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+All named API routes are defined in `config/service.php` and auto-registered in `routes/api.php:9-22`. Each entry has `name`, `class`, `type` (HTTP method), `end_point`, and `guard` (`null` = public; `api`/`doctor`/`patient`).
 
-## License
+The `AppServiceProvider` binds short service names to their classes.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Service pattern
+
+Every service extends `App\CoreService\CoreService` and implements `prepare($input)` + `process($input, $originalData)`. Input is auto-validated via `validation()`. Throw `App\CoreService\CoreException(message, statusCode, errorList)` for errors. Services with `$transaction = true` are wrapped in DB transactions.
+
+### CallService entry points
+
+| Method | Use case | Permission check | JSON wrapping |
+|--------|----------|-----------------|---------------|
+| `CallService::run(name, input)` | HTTP route handlers | No | Returns JSON |
+| `CallService::execute(name, input)` | Permission-gated handlers | Yes (`$object->task`) | Returns JSON |
+| `CallService::call(name, input)` | Internal service calls | No | Raw, throws on error |
+
+### CRUD pattern
+
+Generic CRUD routes at `routes/api.php:24-31` (all behind `setguard:api` + `auth.rest`):
+
+```
+GET  /{model}/list
+GET  /{model}/dataset       (same backend as list)
+GET  /{model}/{id}/show
+POST /{model}/create
+PUT  /{model}/update
+DELETE /{model}/delete
+```
+
+`CrudController` delegates to `App\Services\Crud\*` services (Get, Find, Add, Edit, Delete) using DB::table() queries with manual timestamps. Only fields declared in `FIELD_ADD`/`FIELD_EDIT` are persisted.
+
+### Model conventions
+
+Models define schema via class constants: `TABLE`, `FILEROOT`, `IS_ADD`, `IS_EDIT`, `IS_LIST`, `IS_DELETE`, `FIELD_LIST`, `FIELD_ADD`, `FIELD_EDIT`, `FIELD_VIEW`, `FIELD_READONLY`, `FIELD_FILTERABLE`, `FIELD_SEARCHABLE`, `FIELD_SORTABLE`, `FIELD_TYPE`, `FIELD_RELATION`, `FIELD_VALIDATION`, `FIELD_UNIQUE`, `FIELD_UPLOAD`, `FIELD_DEFAULT_VALUE`.
+
+`BaseModel` defines static lifecycle hooks: `beforeInsert`, `afterInsert`, `beforeUpdate`, `afterUpdate`, `beforeDelete`, `afterDelete`, `beforeList`, `afterDetil`.
+
+Authenticatable models (`Users`, `Doctors`, `Patients`) extend `Authenticatable` (not `BaseModel`) but follow the same constant/hook conventions and implement `JWTSubject`. Use `Hash::make()` for passwords.
+
+### Auth guards
+
+Three JWT guards: `api` (admin/staff), `doctor` (doctors), `patient` (patients). `SetGuard` middleware switches `auth.defaults.guard` before `AuthApiMiddleware` validates the JWT. Login endpoints use `guard: null` and return a JWT.
+
+`hasPermission()` checks `role_task` join table; role_id=1 is super-admin (always returns true).
+
+### File uploads
+
+`POST /upload-tmp` stores to `storage/app/documents/temp/`. CRUD services move temp files to `storage/app/documents/uploads/{table}/` via `HandlesFileUploads` trait. Final paths served at `/file/{path}`.
+
+## Services
+
+### Auth
+
+| Service | Method | Endpoint | Guard |
+|---------|--------|----------|-------|
+| `DoUnifiedLogin` | POST | `/login` | null |
+| `Me` | GET | `/me` | api |
+| `DoLogout` | POST | `/logout` | api |
+| `UpdateAdminProfile` | PUT | `/profile` | api |
+| `UpdateDoctorProfile` | PUT | `/doctor/profile` | doctor |
+| `UpdatePatientProfile` | PUT | `/patient/profile` | patient |
+| `PatientBookAppointment` | POST | `/patient/book` | patient |
+| `ListAvailableDoctors` | GET | `/doctors/available` | null |
+
+### Scoped CRUD
+
+| Service | Method | Endpoint | Guard | Scope |
+|---------|--------|----------|-------|-------|
+| `DoctorAppointments` | GET | `/doctor/appointments` | doctor | `WHERE doctor_id = auth.id` |
+| `DoctorMedicalRecords` | GET | `/doctor/medicalrecords` | doctor | `WHERE doctor_id = auth.id` |
+| `PatientAppointments` | GET | `/patient/appointments` | patient | `WHERE patient_id = auth.id` |
+| `PatientMedicalRecords` | GET | `/patient/medicalrecords` | patient | `WHERE patient_id = auth.id` |
+
+## Database
+
+### Tables
+
+| Table | Model |
+|-------|-------|
+| `users` | `Users` (admin/staff, JWT) |
+| `doctors` | `Doctors` (JWT) |
+| `patients` | `Patients` (JWT) |
+| `roles` | `Roles` |
+| `tasks` | `Tasks` |
+| `role_task` | `RoleTask` |
+| `rooms` | `Rooms` |
+| `appointments` | `Appointments` |
+| `medicalrecords` | `MedicalRecords` |
+
+### Seeded data
+
+`php artisan migrate:fresh --seed` populates:
+
+| Table | Count |
+|-------|-------|
+| roles | 2 (super-admin, receptionist) |
+| tasks | 45 (9 modules × 5 verbs) |
+| role_task | 16 mappings |
+| users | 2 (admin, receptionist) |
+| rooms | 6 |
+| doctors | 10 |
+| patients | 25 |
+| appointments | 32 |
+| medicalrecords | 11 |
+
+## Testing
+
+SQLite in-memory (`phpunit.xml` sets `DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`). Migrations run automatically. Env overrides: cache=array, queue=sync, session=array.
+
+## Environment Quirks
+
+- `DB_CONNECTION` is `mysql`, tests override to `sqlite`
+- `QUEUE_CONNECTION` is `database` — queue worker must run separately
+- `SESSION_DRIVER` is `database` — ensure migrations are run before using the app
+- `JWT_SECRET` must be added manually to `.env`
+
+## Key Dependencies
+
+- **tymon/jwt-auth** — JWT authentication (3 guards)
+- **Tailwind CSS 4** via Vite plugin
+- **Laravel Pint** — code style
+
+## Frontend
+
+The Vue 3 admin panel + doctor/patient portals live at [clinic-app-laravel-frontend](https://github.com/SkuyHub/clinic-app-laravel-frontend).
