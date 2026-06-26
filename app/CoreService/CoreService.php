@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 abstract class CoreService implements DefaultService
 {
     protected static $instances;
+    protected $input;
     abstract protected function prepare($input);
     abstract protected function process($input, $originalData);
     public function execute($input)

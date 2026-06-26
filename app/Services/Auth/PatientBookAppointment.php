@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PatientBookAppointment extends CoreService
-{
+{   
     public $transaction = true;
 
     protected function validation()
