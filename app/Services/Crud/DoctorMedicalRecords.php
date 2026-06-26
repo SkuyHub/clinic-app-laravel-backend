@@ -11,6 +11,9 @@ class DoctorMedicalRecords extends CoreService
 {
     protected function prepare($input)
     {
+        if (isset($input['order']) && !in_array($input['order'], ['asc', 'desc'])) {
+            unset($input['order']);
+        }
         $input['_doctor_id'] = Auth::id();
         return $input;
     }

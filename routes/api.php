@@ -12,9 +12,13 @@ foreach (config('service.services', []) as $service) {
     }
 
     $serviceName = $service['name'];
-    $middleware = !empty($service['guard'])
-        ? ["setguard:{$service['guard']}", 'auth.rest']
-        : [];
+    $middleware = [];
+    if (!empty($service['guard'])) {
+        $middleware = array_merge(["setguard:{$service['guard']}", 'auth.rest'], $middleware);
+    }
+    if (!empty($service['middleware'])) {
+        $middleware = array_merge($middleware, (array) $service['middleware']);
+    }
 
     Route::match([$service['type']], $service['end_point'], function () use ($serviceName) {
         return CallService::run($serviceName, request()->all());

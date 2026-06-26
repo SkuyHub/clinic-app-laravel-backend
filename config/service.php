@@ -8,6 +8,7 @@ return [
             'type' => 'post',
             'end_point' => '/login',
             'guard' => null,
+            'middleware' => ['throttle:login'],
         ],
         [
             'name' => 'Me',
@@ -29,6 +30,7 @@ return [
             'type' => 'post',
             'end_point' => '/doctor/login',
             'guard' => null,
+            'middleware' => ['throttle:login'],
         ],
         [
             'name' => 'UpdateAdminProfile',
@@ -50,6 +52,7 @@ return [
             'type' => 'post',
             'end_point' => '/patient/login',
             'guard' => null,
+            'middleware' => ['throttle:login'],
         ],
         [
             'name' => 'UpdatePatientProfile',

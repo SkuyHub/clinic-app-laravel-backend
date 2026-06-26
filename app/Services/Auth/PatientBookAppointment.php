@@ -80,5 +80,5 @@ class PatientBookAppointment extends CoreService
             'message' => 'Appointment booked successfully.',
             'data' => ['id' => $id],
         ];
-    }
+    }   
 }

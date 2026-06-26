@@ -11,6 +11,9 @@ class PatientAppointments extends CoreService
 {
     protected function prepare($input)
     {
+        if (isset($input['order']) && !in_array($input['order'], ['asc', 'desc'])) {
+            unset($input['order']);
+        }
         $input['_patient_id'] = Auth::id();
         return $input;
     }
