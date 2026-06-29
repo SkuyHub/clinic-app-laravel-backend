@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('username', 50)->unique();
             $table->string('email', 100)->unique();
             $table->string('password');
-            $table->unsignedBigInteger('role_id');
+            $table->bigInteger('role_id');
             $table->string('photo')->nullable();
             $table->boolean('active')->default(true);
             $table->rememberToken();

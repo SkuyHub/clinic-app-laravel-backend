@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('room_code', 20)->unique();
             $table->string('room_name', 100);
-            $table->unsignedInteger('capacity')->default(1);
+            $table->integer('capacity')->default(1);
             $table->boolean('available')-> default(true);
             $table->timestamps();
         });

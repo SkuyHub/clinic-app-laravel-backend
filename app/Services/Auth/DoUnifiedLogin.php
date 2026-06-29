@@ -23,6 +23,8 @@ class DoUnifiedLogin extends CoreService
 
     protected function prepare($input)
     {
+        $input['email'] = strtolower($input['email']);
+
         $admin = Users::where('email', $input['email'])
             ->orWhere('username', $input['email'])
             ->first();

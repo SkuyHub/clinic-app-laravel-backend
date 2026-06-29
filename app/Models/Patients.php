@@ -70,6 +70,7 @@ class Patients extends Authenticatable implements JWTSubject
         }
 
         $input['password'] = Hash::make($input['password']);
+        $input['email'] = strtolower($input['email']);
 
         return $input;
     }

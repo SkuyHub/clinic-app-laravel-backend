@@ -20,6 +20,8 @@ class DoLogin extends CoreService
 
     protected function prepare($input)
     {
+        $input['username'] = strtolower($input['username']);
+
         $user = Users::where('username', $input['username'])
             ->orWhere('email', $input['username'])
             ->first();

@@ -20,6 +20,8 @@ class DoLoginPatient extends CoreService
 
     protected function prepare($input)
     {
+        $input['email'] = strtolower($input['email']);
+
         $patient = Patients::where('email', $input['email'])->first();
 
         if (!$patient) {

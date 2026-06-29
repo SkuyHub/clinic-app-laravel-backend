@@ -71,6 +71,7 @@ class Doctors extends Authenticatable implements JWTSubject
         }
 
         $input['password'] = Hash::make($input['password']);
+        $input['email'] = strtolower($input['email']);
         $input = self::normalizeBooleanField($input, 'available', true);
 
         return $input;

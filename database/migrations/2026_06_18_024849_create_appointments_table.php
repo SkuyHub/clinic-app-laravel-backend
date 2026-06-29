@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -18,10 +19,12 @@ return new class extends Migration
             $table->foreignId('room_id')->constrained('rooms')->cascadeOnUpdate()->restrictOnDelete();
             $table->date('appointment_date');
             $table->time('appointment_time');
-            $table->enum('status', ['scheduled', 'completed', 'cancelled'])->default('scheduled');
+            $table->string('status')->default('scheduled');
             $table->text('notes')->nullable();
             $table->timestamps();
         });
+
+        DB::statement("ALTER TABLE appointments ADD CONSTRAINT appointments_status_check CHECK (status IN ('scheduled', 'completed', 'cancelled'))");
     }
 
     /**

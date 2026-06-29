@@ -87,6 +87,7 @@ class Users extends Authenticatable implements JWTSubject
         }
 
         $input['password'] = Hash::make($input['password']);
+        $input['email'] = strtolower($input['email']);
         $input['active'] = filter_var($input['active'] ?? true, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         return $input;
     }
