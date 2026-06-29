@@ -4,11 +4,13 @@ namespace App\Services\Crud;
 
 use App\CoreService\CoreService;
 use App\Models\Appointments;
+use App\Services\Crud\Concerns\BuildsListQuery;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class PatientAppointments extends CoreService
 {
+    use BuildsListQuery;
+
     protected function prepare($input)
     {
         if (isset($input['order']) && !in_array($input['order'], ['asc', 'desc'])) {
@@ -20,63 +22,16 @@ class PatientAppointments extends CoreService
 
     protected function process($input, $originalData)
     {
-        $table = Appointments::TABLE;
-        $page = (int) ($input['page'] ?? 1);
-        $limit = (int) ($input['limit'] ?? 10);
-        $offset = ($page - 1) * $limit;
-
-        $query = DB::table($table)
-            ->select(array_map(fn($f) => "{$table}.{$f}", Appointments::FIELD_LIST))
-            ->where("{$table}.patient_id", $input['_patient_id']);
-
-        foreach (Appointments::FIELD_RELATION as $field => $relation) {
-            $query->leftJoin(
-                "{$relation['linkTable']} as {$relation['aliasTable']}",
-                "{$table}.{$field}",
-                '=',
-                "{$relation['aliasTable']}.{$relation['linkField']}"
-            );
-
-            $query->selectRaw("CONCAT_WS(' ', " . implode(', ', array_map(
-                fn($f) => "{$relation['aliasTable']}.{$f}",
-                $relation['selectFields']
-            )) . ") as {$relation['displayName']}");
-        }
-
-        if (!empty($input['search']) && !empty(Appointments::FIELD_SEARCHABLE)) {
-            $search = $input['search'];
-            $query->where(function ($q) use ($table, $search) {
-                foreach (Appointments::FIELD_SEARCHABLE as $field) {
-                    $q->orWhereRaw("LOWER({$table}.{$field}) LIKE ?", ['%' . strtolower($search) . '%']);
+        return $this->buildListQuery(
+            Appointments::class,
+            $input,
+            'patient_id',
+            [['appointment_date', 'asc'], ['appointment_time', 'asc']],
+            function ($query, $input) {
+                if (!empty($input['status'])) {
+                    $query->where('appointments.status', $input['status']);
                 }
-            });
-        }
-
-        if (!empty($input['status'])) {
-            $query->where("{$table}.status", $input['status']);
-        }
-
-        $total = $query->count();
-
-        $sortField = $input['sort'] ?? null;
-        $sortDir = $input['order'] ?? 'asc';
-
-        if ($sortField && in_array($sortField, Appointments::FIELD_SORTABLE)) {
-            $query->orderBy("{$table}.{$sortField}", $sortDir === 'desc' ? 'desc' : 'asc');
-        } else {
-            $query->orderBy("{$table}.appointment_date", 'asc')
-                  ->orderBy("{$table}.appointment_time", 'asc');
-        }
-
-        $rows = $query->offset($offset)->limit($limit)->get();
-
-        return [
-            'success' => true,
-            'data' => $rows,
-            'total' => $total,
-            'page' => $page,
-            'limit' => $limit,
-            'last_page' => (int) ceil($total / max($limit, 1)),
-        ];
+            }
+        );
     }
 }

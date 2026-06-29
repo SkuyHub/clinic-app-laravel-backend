@@ -27,9 +27,11 @@ class PatientBookAppointment extends CoreService
     {
         $doctor = \App\Models\Doctors::find($input['doctor_id']);
 
-        if (!$doctor->available) {
-            throw new CoreException('Selected doctor is currently unavailable.', 422);
+        if (!$doctor) {
+            throw new CoreException('Doctor not found.', 404);
         }
+
+        Appointments::ensureSlotAvailable($input['doctor_id'], $input['appointment_date'], $input['appointment_time']);
 
         $room = Rooms::where('available', true)
             ->whereDoesntHave('appointments', function ($q) use ($input) {
@@ -41,17 +43,6 @@ class PatientBookAppointment extends CoreService
 
         if (!$room) {
             throw new CoreException('No available rooms at this date and time.', 422);
-        }
-
-        $conflict = DB::table('appointments')
-            ->where('appointment_date', $input['appointment_date'])
-            ->where('appointment_time', $input['appointment_time'])
-            ->where('doctor_id', $input['doctor_id'])
-            ->where('status', '!=', 'cancelled')
-            ->exists();
-
-        if ($conflict) {
-            throw new CoreException('This doctor is already booked at the selected date and time.', 409);
         }
 
         $this->input = $input;

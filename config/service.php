@@ -55,6 +55,14 @@ return [
             'middleware' => ['throttle:login'],
         ],
         [
+            'name' => 'RegisterPatient',
+            'class' => \App\Services\Auth\RegisterPatient::class,
+            'type' => 'post',
+            'end_point' => '/patient/register',
+            'guard' => null,
+            'middleware' => ['throttle:register'],
+        ],
+        [
             'name' => 'UpdatePatientProfile',
             'class' => \App\Services\Auth\UpdatePatientProfile::class,
             'type' => 'put',

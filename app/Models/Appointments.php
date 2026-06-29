@@ -74,27 +74,7 @@ class Appointments extends BaseModel
 
     public static function beforeInsert(array $input): array
     {
-        $conflict = DB::table('appointments')
-            ->where('appointment_date', $input['appointment_date'])
-            ->where('appointment_time', $input['appointment_time'])
-            ->where('status', '!=', 'cancelled')
-            ->where(function ($q) use ($input) {
-                $q->where('doctor_id', $input['doctor_id'])
-                  ->orWhere('room_id', $input['room_id']);
-            })
-            ->exists();
-
-        if ($conflict) {
-            throw new CoreException(
-                'This doctor or room is already booked at the selected date and time.',
-                409
-            );
-        }
-
-        $doctorAvailable = Doctors::where('id', $input['doctor_id'])->value('available');
-        if (!$doctorAvailable) {
-            throw new CoreException('Selected doctor is currently unavailable.', 422);
-        }
+        self::ensureSlotAvailable($input['doctor_id'], $input['appointment_date'], $input['appointment_time'], $input['room_id'] ?? null);
 
         if (!array_key_exists('status', $input) || blank($input['status'] ?? null)) {
             $input['status'] = 'scheduled';
@@ -124,32 +104,41 @@ class Appointments extends BaseModel
             $date = $input['appointment_date'] ?? $current->appointment_date;
             $time = $input['appointment_time'] ?? $current->appointment_time;
 
-            $conflict = DB::table('appointments')
-                ->where('id', '!=', $input['id'])
-                ->where('appointment_date', $date)
-                ->where('appointment_time', $time)
-                ->where('status', '!=', 'cancelled')
-                ->where(function ($q) use ($doctorId, $roomId) {
-                    $q->where('doctor_id', $doctorId)
-                      ->orWhere('room_id', $roomId);
-                })
-                ->exists();
-
-            if ($conflict) {
-                throw new CoreException(
-                    'This doctor or room is already booked at the selected date and time.',
-                    409
-                );
-            }
-
-            if (array_key_exists('doctor_id', $input)) {
-                $doctorAvailable = Doctors::where('id', $doctorId)->value('available');
-                if (!$doctorAvailable) {
-                    throw new CoreException('Selected doctor is currently unavailable.', 422);
-                }
-            }
+            self::ensureSlotAvailable(
+                $doctorId, $date, $time,
+                array_key_exists('room_id', $input) || array_key_exists('doctor_id', $input) ? $roomId : null,
+                $input['id']
+            );
         }
 
         return $input;
+    }
+
+    public static function ensureSlotAvailable(int $doctorId, string $date, string $time, ?int $roomId = null, ?int $excludeId = null): void
+    {
+        $doctorAvailable = Doctors::where('id', $doctorId)->value('available');
+        if (!$doctorAvailable) {
+            throw new CoreException('Selected doctor is currently unavailable.', 422);
+        }
+
+        $conflict = DB::table('appointments')
+            ->where('appointment_date', $date)
+            ->where('appointment_time', $time)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($q) use ($doctorId, $roomId) {
+                $q->where('doctor_id', $doctorId);
+                if ($roomId) {
+                    $q->orWhere('room_id', $roomId);
+                }
+            })
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
+            ->exists();
+
+        if ($conflict) {
+            throw new CoreException(
+                'This doctor or room is already booked at the selected date and time.',
+                409
+            );
+        }
     }
 }
