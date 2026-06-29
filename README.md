@@ -10,7 +10,11 @@ composer run setup
 
 This installs dependencies, copies `.env.example`, generates `APP_KEY`, runs migrations, installs npm deps, and builds the frontend.
 
-**Important**: Add `JWT_SECRET` to `.env` manually — it is not auto-generated and not in `.env.example`.
+**Important**: Add `JWT_SECRET` to `.env` manually — it is not auto-generated. `JWT_SECRET=` is now included in `.env.example` as a reminder.
+
+## Database
+
+Supports both **MySQL** (default) and **PostgreSQL**. To switch to PostgreSQL, see [Database Setup](#database-setup) below.
 
 ## Commands
 
@@ -74,7 +78,14 @@ Three JWT guards: `api` (admin/staff), `doctor` (doctors), `patient` (patients).
 
 ### File uploads
 
-`POST /upload-tmp` stores to `storage/app/documents/temp/`. CRUD services move temp files to `storage/app/documents/uploads/{table}/` via `HandlesFileUploads` trait. Final paths served at `/file/{path}`.
+`POST /upload-tmp` (or `/doctor/upload-tmp`, `/patient/upload-tmp`) stores to `storage/app/documents/temp/`. CRUD services move temp files to `storage/app/documents/uploads/{table}/` via `HandlesFileUploads` trait. Final paths served at `/file/{path}`. Upload endpoints are guard-aware — the frontend detects the active portal and routes to the correct endpoint.
+
+### Security
+
+- **Rate limiting**: Login endpoints (`/login`, `/doctor/login`, `/patient/login`) are throttled at 5 requests per minute.
+- **CORS**: Origin is configurable via `CORS_ALLOWED_ORIGINS` env variable. Allowed methods restricted to `GET, POST, PUT, DELETE`. Allowed headers restricted to `Content-Type, Authorization, X-Requested-With, Accept`.
+- **Passwords**: Hashed with `Hash::make()` in `beforeInsert`/`beforeUpdate`. All models exclude `password` from `FIELD_LIST`/`FIELD_VIEW` and use the `$hidden` array.
+- **Email normalization**: Login search and `beforeInsert` hooks lowercase emails. On PostgreSQL this ensures case-insensitive matching; on MySQL it standardizes stored data.
 
 ## Services
 
@@ -116,6 +127,46 @@ Three JWT guards: `api` (admin/staff), `doctor` (doctors), `patient` (patients).
 | `appointments` | `Appointments` |
 | `medicalrecords` | `MedicalRecords` |
 
+### Database Setup
+
+**MySQL (default):**
+
+```ini
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=clinic_laravel
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+**PostgreSQL:**
+
+```ini
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=clinic_laravel
+DB_USERNAME=postgres
+DB_PASSWORD=yourpassword
+```
+
+Ensure the `pdo_pgsql` and `pgsql` PHP extensions are enabled in `php.ini`. Migrations use portable syntax — `enum` columns replaced with `string` + CHECK constraints, `unsigned` modifiers removed, and `->after()` column ordering removed.
+
+If migrating existing data to PostgreSQL, lowercase all stored emails first:
+```sql
+UPDATE users SET email = LOWER(email);
+UPDATE doctors SET email = LOWER(email);
+UPDATE patients SET email = LOWER(email);
+```
+
+### Indexes
+
+Explicit indexes added on:
+- `appointments.status`
+- `appointments.appointment_date`
+- `doctors.available`
+
 ### Seeded data
 
 `php artisan migrate:fresh --seed` populates:
@@ -138,10 +189,12 @@ SQLite in-memory (`phpunit.xml` sets `DB_CONNECTION=sqlite`, `DB_DATABASE=:memor
 
 ## Environment Quirks
 
-- `DB_CONNECTION` is `mysql`, tests override to `sqlite`
+- `DB_CONNECTION` supports `mysql` and `pgsql` — tests override to `sqlite`
 - `QUEUE_CONNECTION` is `database` — queue worker must run separately
 - `SESSION_DRIVER` is `database` — ensure migrations are run before using the app
 - `JWT_SECRET` must be added manually to `.env`
+- `.npmrc` sets `ignore-scripts=true` — npm post-install scripts don't run
+- `CORS_ALLOWED_ORIGINS` should be set in `.env` for non-localhost deployments
 
 ## Key Dependencies
 
