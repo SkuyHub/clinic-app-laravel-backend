@@ -25,6 +25,13 @@ return [
             'guard' => 'api',
         ],
         [
+            'name' => 'AdminDashboard',
+            'class' => \App\Services\Auth\AdminDashboard::class,
+            'type' => 'get',
+            'end_point' => '/dashboard',
+            'guard' => 'api',
+        ],
+        [
             'name' => 'DoLoginDoctor',
             'class' => \App\Services\Auth\DoLoginDoctor::class,
             'type' => 'post',
@@ -68,6 +75,13 @@ return [
             'type' => 'put',
             'end_point' => '/patient/profile',
             'guard' => 'patient',
+        ],
+        [
+            'name' => 'CreateDoctorMedicalRecord',
+            'class' => \App\Services\Auth\CreateDoctorMedicalRecord::class,
+            'type' => 'post',
+            'end_point' => '/doctor/medicalrecords/create',
+            'guard' => 'doctor',
         ],
         [
             'name' => 'DoctorAppointments',

@@ -85,20 +85,20 @@ class Appointments extends BaseModel
 
     public static function beforeUpdate(array $input): array
     {
+        $current = DB::table('appointments')->where('id', $input['id'])->first();
+
+        if (!$current) {
+            throw new CoreException('Appointment not found.', 404);
+        }
+
+        if ($current->status === 'completed') {
+            throw new CoreException('Completed appointments cannot be modified.', 422);
+        }
+
         $checkingFields = ['doctor_id', 'patient_id', 'room_id', 'appointment_date', 'appointment_time', 'status'];
         $isRescheduling = !empty(array_intersect($checkingFields, array_keys($input)));
 
         if ($isRescheduling && (!isset($input['status']) || $input['status'] !== 'cancelled')) {
-            $current = DB::table('appointments')->where('id', $input['id'])->first();
-
-            if (!$current) {
-                throw new CoreException('Appointment not found.', 404);
-            }
-
-            if ($current->status === 'completed') {
-                throw new CoreException('Completed appointments cannot be modified.', 422);
-            }
-
             $doctorId = $input['doctor_id'] ?? $current->doctor_id;
             $roomId = $input['room_id'] ?? $current->room_id;
             $date = $input['appointment_date'] ?? $current->appointment_date;
