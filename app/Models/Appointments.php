@@ -17,7 +17,9 @@ class Appointments extends BaseModel
         'patient_id' => ['operator' => '='],
         'room_id' => ['operator' => '='],
         'status' => ['operator' => '='],
-        'appointment_date' => ['operator' => '='],
+        'appointment_date' => ['operator' => 'in'],
+        'appointment_date_from' => ['operator' => '>=', 'column' => 'appointment_date'],
+        'appointment_date_to' => ['operator' => '<=', 'column' => 'appointment_date'],
     ];
     public const FIELD_SEARCHABLE = ['notes'];
     public const FIELD_SORTABLE = ['id', 'doctor_id', 'patient_id', 'room_id', 'appointment_date', 'appointment_time', 'status', 'created_at', 'updated_at'];

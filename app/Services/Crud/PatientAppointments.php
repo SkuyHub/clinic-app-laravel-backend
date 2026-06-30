@@ -31,6 +31,15 @@ class PatientAppointments extends CoreService
                 if (!empty($input['status'])) {
                     $query->where('appointments.status', $input['status']);
                 }
+                if (!empty($input['appointment_date_from'])) {
+                    $query->where('appointments.appointment_date', '>=', $input['appointment_date_from']);
+                }
+                if (!empty($input['appointment_date_to'])) {
+                    $query->where('appointments.appointment_date', '<=', $input['appointment_date_to']);
+                }
+                if (!empty($input['appointment_date'])) {
+                    $query->whereIn('appointments.appointment_date', explode(',', $input['appointment_date']));
+                }
             }
         );
     }

@@ -70,7 +70,12 @@ class Get extends CoreService
 
         foreach ($modelClass::FIELD_FILTERABLE as $field => $config) {
            if (isset($input[$field]) && $input[$field] !== '') {
-            $query->where("{$table}.{$field}", $config['operator'], $input[$field]);
+            $column = $config['column'] ?? $field;
+            if ($config['operator'] === 'in') {
+                $query->whereIn("{$table}.{$column}", explode(',', $input[$field]));
+            } else {
+                $query->where("{$table}.{$column}", $config['operator'], $input[$field]);
+            }
            }
         }
 
